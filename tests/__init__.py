@@ -53,6 +53,12 @@ class ViewTest(unittest.TestCase):
         if self.view:
             self.view.close()
 
+    def assertEqualRegions(self, expectedRegion, actualRegion, msg=''):
+        if (expectedRegion.size() == 1 and actualRegion.size() == 1):
+            expectedRegion = make_region(self.view, expectedRegion.begin(), expectedRegion.end())
+            actualRegion = make_region(self.view, actualRegion.begin(), actualRegion.end())
+        self.assertEqual(expectedRegion, actualRegion, msg)
+
 
 def make_region(view, a, b=None):
     try:
