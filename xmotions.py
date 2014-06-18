@@ -51,21 +51,25 @@ class _vi_find_in_line(ViMotionCommand):
 
             match = s
 
-            if (mode in (modes.NORMAL, modes.INTERNAL_NORMAL) and
-                not inclusive
-               and skipping):
+            if (mode in (modes.NORMAL, modes.INTERNAL_NORMAL)
+                and not inclusive
+                and skipping):
                     # When repeating through ';', we must make sure we skip one
                     # if we are at a match position.
                     if view.substr(match.b + 1) == char:
                         match = sublime.Region(match.b + 1)
 
             for i in range(count):
-                # Define search range as 'rest of the line to the right'.
-                if state.mode != modes.VISUAL:
-                    search_range = sublime.Region(min(match.b + 1, eol), eol)
-
+                if mode != modes.VISUAL:
+                    cursor_pos = match.a + 1
                 else:
-                    search_range = sublime.Region(min(match.b, eol), eol)
+                    if match.a < match.b:
+                        cursor_pos = match.b
+                    else:
+                        cursor_pos = match.b + 1
+
+                # Define search range as 'rest of the line to the right'.
+                search_range = sublime.Region(min(cursor_pos, eol), eol)
 
                 match = find_in_range(view, char,
                                             search_range.a,
@@ -75,20 +79,32 @@ class _vi_find_in_line(ViMotionCommand):
                 # Count too high or simply no match; break.
                 if match is None:
                     return s
-                    break
 
             if (mode == modes.VISUAL) or (mode == modes.INTERNAL_NORMAL):
-                if match.a == s.b:
-                    return s
-                if not inclusive:
-                    return sublime.Region(s.a, match.b - 1)
+                if s.a < s.b:
+                    # Forward region
+                    start = s.a
+                    end = match.a + 1
+                elif match.a < s.a:
+                    # Reverse region, no crossover
+                    start = s.a
+                    end = match.a
                 else:
-                    return sublime.Region(s.a, match.b)
+                    # Reverse region, crossover
+                    start = s.a - 1
+                    end = match.a + 1
 
-            if not inclusive:
-                return sublime.Region(match.a - 1)
+                if not inclusive:
+                    end = end - 1
+
+                return sublime.Region(start, end)
+
             else:
-                return sublime.Region(match.a)
+                start = match.a
+                if not inclusive:
+                    start = start - 1
+
+                return sublime.Region(start)
 
         if not all([char, mode]):
             print('char', char, 'mode', mode)
