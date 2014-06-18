@@ -3137,7 +3137,10 @@ class ViSearchCharForward(ViMotionDef):
 
     def translate(self, state):
         cmd = {}
-        state.last_char_search_command = 'vi_f'
+        if self.inclusive:
+            state.last_char_search_command = 'vi_f'
+        else:
+            state.last_char_search_command = 'vi_t'
         state.last_character_search =  self.inp
         cmd['motion'] = '_vi_find_in_line'
         cmd['motion_args'] = {'char': self.inp,
@@ -3261,7 +3264,10 @@ class ViSearchCharBackward(ViMotionDef):
 
     def translate(self, state):
         cmd = {}
-        state.last_char_search_command = 'vi_big_f'
+        if self.inclusive:
+            state.last_char_search_command = 'vi_big_f'
+        else:
+            state.last_char_search_command = 'vi_big_t'
         state.last_character_search = self.inp
         cmd['motion'] = '_vi_reverse_find_in_line'
         cmd['motion_args'] = {'char': self.inp,
