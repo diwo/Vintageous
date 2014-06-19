@@ -42,7 +42,7 @@ class _vi_find_in_line(ViMotionCommand):
     Contrary to *f*, *t* does not look past the caret's position, so if
     @character is under the caret, nothing happens.
     """
-    def run(self, char=None, mode=None, count=1, change_direction=False, inclusive=True):
+    def run(self, char=None, mode=None, count=1, inclusive=True):
         def f(view, s):
             eol = view.line(s.b).end()
             if not s.empty():
@@ -112,7 +112,7 @@ class _vi_reverse_find_in_line(ViMotionCommand):
     """Contrary to *F*, *T* does not look past the caret's position, so if ``character`` is right
        before the caret, nothing happens.
     """
-    def run(self, char=None, mode=None, count=1, change_direction=False, inclusive=True):
+    def run(self, char=None, mode=None, count=1, inclusive=True):
         def f(view, s):
             if mode not in (modes.VISUAL, modes.VISUAL_LINE, modes.VISUAL_BLOCK):
                 a, b = view.line(s.b).a, s.b
