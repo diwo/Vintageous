@@ -2455,9 +2455,7 @@ class ViRepeatCharSearchForward(ViMotionDef):
         cmd['motion_args'] = {'mode': state.mode, 'count': state.count,
                               'char': state.last_character_search,
                               'change_direction': False,
-                              'inclusive': inclusive,
-                              'skipping': not inclusive
-                              }
+                              'inclusive': inclusive}
 
         return cmd
 
@@ -2685,8 +2683,7 @@ class ViRepeatCharSearchBackward(ViMotionDef):
         cmd['motion_args'] = {'mode': state.mode, 'count': state.count,
                               'char': state.last_character_search,
                               'change_direction': False,
-                              'inclusive': inclusive,
-                              'skipping': not inclusive}
+                              'inclusive': inclusive}
 
         return cmd
 
