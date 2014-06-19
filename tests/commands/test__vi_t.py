@@ -5,6 +5,14 @@ from Vintageous.vi.utils import modes
 
 test_data = namedtuple('test_data', 'text startRegion findChar mode expectedRegion msg')
 
+NORMAL_CASES = (
+	test_data('0a23x5', (1, 1), 'x', modes.NORMAL, (3, 3), 'Find ahead'),
+	test_data('0ax345', (1, 1), 'x', modes.NORMAL, (1, 1), 'Find next'),
+	test_data('0x2345', (1, 1), 'x', modes.NORMAL, (1, 1), 'Find self'),
+	test_data('0a2xx5', (1, 1), 'x', modes.NORMAL, (2, 2), 'Find multiple'),
+	test_data('0x2x45', (1, 1), 'x', modes.NORMAL, (2, 2), 'Find self multiple'),
+)
+
 VISUAL_MULTI_CHAR_CASES = (
 	test_data('0ab3x5', (1, 3), 'x', modes.VISUAL, (1, 4), 'Forward'),
 	test_data('0a23x5', (1, 5), 'x', modes.VISUAL, (1, 5), 'Forward find b'),
@@ -45,6 +53,9 @@ class Test_vi_t(ViewTest):
 			self.assertEqualRegions(self.R(*data.expectedRegion), self.first_sel(),
 				"Failed on index {} {} : Text:\"{}\" Region:{} Find:'{}'"
 					.format(i, data.msg, data.text, data.startRegion, data.findChar))
+
+	def testNormalCases(self):
+		self.runTests(NORMAL_CASES)
 
 	def testVisualMultipleCharacterCases(self):
 		self.runTests(VISUAL_MULTI_CHAR_CASES)
