@@ -114,41 +114,48 @@ class _vi_reverse_find_in_line(ViMotionCommand):
     """
     def run(self, char=None, mode=None, count=1, inclusive=True):
         def f(view, s):
-            if mode not in (modes.VISUAL, modes.VISUAL_LINE, modes.VISUAL_BLOCK):
-                a, b = view.line(s.b).a, s.b
+            line_start = view.line(s.b).a
+            if mode in (modes.VISUAL, modes.VISUAL_LINE, modes.VISUAL_BLOCK):
+                line_start = view.line(s.b - 1).a
 
-            else:
-                a, b = view.line(s.b - 1).a, s.b
-
-            final_offset = -1
+            match = s.b
+            if s.a < s.b:
+                match = s.b - 1
 
             try:
-                # search backwards
                 for i in range(count):
-                    line_text = view.substr(sublime.Region(a, b))
+                    # line_text does not include character at match
+                    line_text = view.substr(sublime.Region(line_start, match))
                     found_at = line_text.rindex(char)
-
-                    final_offset = found_at
-
-                    b = view.line(s.a).a + final_offset
+                    match = line_start + found_at
             except ValueError:
-                pass
+                return s
 
-            if final_offset > -1:
-                pt = view.line(s.b).a + final_offset
-
-                if mode == modes.VISUAL or mode == modes.INTERNAL_NORMAL:
-                    if not inclusive:
-                        return sublime.Region(s.a, pt + 1)
-                    else:
-                        return sublime.Region(s.a, pt)
+            if (mode == modes.VISUAL) or (mode == modes.INTERNAL_NORMAL):
+                if s.b < s.a:
+                    # Reverse region
+                    start = s.a
+                    end = match
+                elif s.a <= match:
+                    # Forward region, no crossover
+                    start = s.a
+                    end = match + 1
+                else:
+                    # Forward region, crossover
+                    start = s.a + 1
+                    end = match
 
                 if not inclusive:
-                    return sublime.Region(pt + 1)
-                else:
-                    return sublime.Region(pt)
+                    end = end + 1
 
-            return s
+                return sublime.Region(start, end)
+
+            else:
+                start = match
+                if not inclusive:
+                    start = start + 1
+
+                return sublime.Region(start)
 
         if not all([char, mode]):
             raise ValueError('bad parameters')
