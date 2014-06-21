@@ -71,31 +71,37 @@ class _vi_find_in_line(ViMotionCommand):
                 if match is None:
                     return s
 
-            if (mode == modes.VISUAL) or (mode == modes.INTERNAL_NORMAL):
-                if s.a < s.b:
-                    # Forward region
-                    start = s.a
-                    end = match.a + 1
-                elif match.a < s.a:
-                    # Reverse region, no crossover
-                    start = s.a
-                    end = match.a
-                else:
-                    # Reverse region, crossover
-                    start = s.a - 1
-                    end = match.a + 1
-
-                if not inclusive:
-                    end = end - 1
-
-                return sublime.Region(start, end)
-
-            else:
+            if mode == modes.NORMAL:
                 start = match.a
                 if not inclusive:
                     start = start - 1
 
                 return sublime.Region(start)
+
+            else:
+                if mode == modes.INTERNAL_NORMAL:
+                    start = s.a
+                    end = match.a + 1
+
+                else:
+                    # VISUAL mode
+                    if s.a < s.b:
+                        # Forward region
+                        start = s.a
+                        end = match.a + 1
+                    elif match.a < s.a:
+                        # Reverse region, no crossover
+                        start = s.a
+                        end = match.a
+                    else:
+                        # Reverse region, crossover
+                        start = s.a - 1
+                        end = match.a + 1
+
+                if not inclusive:
+                    end = end - 1
+
+                return sublime.Region(start, end)
 
         if not all([char, mode]):
             print('char', char, 'mode', mode)
@@ -131,31 +137,37 @@ class _vi_reverse_find_in_line(ViMotionCommand):
             except ValueError:
                 return s
 
-            if (mode == modes.VISUAL) or (mode == modes.INTERNAL_NORMAL):
-                if s.b < s.a:
-                    # Reverse region
-                    start = s.a
-                    end = match
-                elif s.a <= match:
-                    # Forward region, no crossover
-                    start = s.a
-                    end = match + 1
-                else:
-                    # Forward region, crossover
-                    start = s.a + 1
-                    end = match
-
-                if not inclusive:
-                    end = end + 1
-
-                return sublime.Region(start, end)
-
-            else:
+            if mode == modes.NORMAL:
                 start = match
                 if not inclusive:
                     start = start + 1
 
                 return sublime.Region(start)
+
+            else:
+                if mode == modes.INTERNAL_NORMAL:
+                    start = s.a
+                    end = match
+
+                else:
+                    # VISUAL mode
+                    if s.b < s.a:
+                        # Reverse region
+                        start = s.a
+                        end = match
+                    elif s.a <= match:
+                        # Forward region, no crossover
+                        start = s.a
+                        end = match + 1
+                    else:
+                        # Forward region, crossover
+                        start = s.a + 1
+                        end = match
+
+                if not inclusive:
+                    end = end + 1
+
+                return sublime.Region(start, end)
 
         if not all([char, mode]):
             raise ValueError('bad parameters')

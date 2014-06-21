@@ -13,6 +13,14 @@ NORMAL_CASES = (
 	test_data('01x3x5', (4, 4), 'x', modes.NORMAL, (2, 2), 'Find self multiple'),
 )
 
+INTERNAL_NORMAL_CASES = (
+	test_data('0x23a5', (4, 4), 'x', modes.INTERNAL_NORMAL, (4, 1), 'Find behind'),
+	test_data('012xa5', (4, 4), 'x', modes.INTERNAL_NORMAL, (4, 3), 'Find previous'),
+	test_data('0123x5', (4, 4), 'x', modes.INTERNAL_NORMAL, (4, 4), 'Find self'),
+	test_data('0xx3a5', (4, 4), 'x', modes.INTERNAL_NORMAL, (4, 2), 'Find multiple'),
+	test_data('01x3x5', (4, 4), 'x', modes.INTERNAL_NORMAL, (4, 2), 'Find self multiple'),
+)
+
 VISUAL_MULTI_CHAR_CASES = (
 	test_data('0x2ba5', (5, 3), 'x', modes.VISUAL, (5, 1), 'Reverse'),
 	test_data('0x23a5', (5, 1), 'x', modes.VISUAL, (5, 1), 'Reverse find b'),
@@ -53,6 +61,9 @@ class Test_vi_big_f(ViewTest):
 
 	def testNormalCases(self):
 		self.runTests(NORMAL_CASES)
+
+	def testInternalNormalCases(self):
+		self.runTests(INTERNAL_NORMAL_CASES)
 
 	def testVisualMultipleCharacterCases(self):
 		self.runTests(VISUAL_MULTI_CHAR_CASES)
