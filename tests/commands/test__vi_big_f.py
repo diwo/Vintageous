@@ -47,6 +47,18 @@ VISUAL_MULTI_MATCHES_CASES = (
 	test_data('01xax5', (3, 5), 'x', modes.VISUAL, (4, 2), 'Forward find b'),
 )
 
+VISUAL_MULTI_LINE_CASES = (
+	test_data('012\n456',   (2, 7), '0', modes.VISUAL, (2, 7), 'Select L1->L2, find on L1'),
+	test_data('012\n456',   (2, 7), '4', modes.VISUAL, (2, 5), 'Select L1->L2, find on L2'),
+	test_data('012\n456',   (2, 4), '0', modes.VISUAL, (3, 0), 'Select L1->LF, find on L1'),
+	test_data('012\n456',   (2, 4), '5', modes.VISUAL, (2, 4), 'Select L1->LF, find on L2'),
+	test_data('012\n456',   (7, 2), '0', modes.VISUAL, (7, 0), 'Select L2->L1, find on L1'),
+	test_data('012\n456',   (7, 2), '4', modes.VISUAL, (7, 2), 'Select L2->L1, find on L2'),
+	test_data('012\n456',   (7, 3), '0', modes.VISUAL, (7, 0), 'Select L2->LF, find on L1'),
+	test_data('012\n456',   (7, 3), '4', modes.VISUAL, (7, 3), 'Select L2->LF, find on L2'),
+	test_data('0123\n5678', (2, 4), '0', modes.VISUAL, (3, 0), 'Select L1->LF-1, find on L1'),
+)
+
 class Test_vi_big_f(ViewTest):
 	def runTests(self, data):
 		for (i, data) in enumerate(data):
@@ -71,5 +83,8 @@ class Test_vi_big_f(ViewTest):
 	def testVisualSingleCharacterCases(self):
 		self.runTests(VISUAL_ONE_CHAR_CASES)
 
-	def testVisualMultipleMatchesCase(self):
+	def testVisualMultipleMatchesCases(self):
 		self.runTests(VISUAL_MULTI_MATCHES_CASES)
+
+	def testVisualMultipleLinesCases(self):
+		self.runTests(VISUAL_MULTI_LINE_CASES)

@@ -45,7 +45,7 @@ class _vi_find_in_line(ViMotionCommand):
     def run(self, char=None, mode=None, count=1, inclusive=True):
         def f(view, s):
             eol = view.line(s.b).end()
-            if not s.empty():
+            if s.a < s.b:
                 eol = view.line(s.b - 1).end()
 
             match = s
