@@ -176,6 +176,74 @@ def regions_transformer(view, f):
     view.sel().clear()
     view.sel().add_all(new)
 
+class ViRegion(sublime.Region):
+    """
+    Extends functionality of sublime.Region to provide
+    helper methods for identifying boundaries
+
+    Usage:
+        ViRegion(sublime.Region(a, b))
+        ViRegion(a, b)
+    """
+
+    def __init__(self, *args):
+        if (len(args) == 1) and (isinstance(args[0], sublime.Region)):
+            region = args[0]
+        else:
+            region = sublime.Region(*args)
+
+        self.__dict__ = region.__dict__.copy()
+
+    @staticmethod
+    def create_from_inclusive_bounds(first, last):
+        """
+        Creates a region from inclusive boundaries,
+        as opposed to the exclusive upperbound in sublime.Region(a,b)
+        """
+        if first <= last:
+            return ViRegion(first, last + 1)
+        else:
+            return ViRegion(first + 1, last)
+
+    def char_pos_a(self):
+        """
+        Returns position of the character closest to a within the region
+        """
+        if self.a < self.b:
+            return self.a
+        elif self.b < self.a:
+            return self.a - 1
+        else:
+            return None
+
+    def char_pos_b(self):
+        """
+        Returns position of the character closest to b within the region
+        """
+        if self.a < self.b:
+            return self.b - 1
+        elif self.b < self.a:
+            return self.b
+        else:
+            return None
+
+    def first(self):
+        """
+        Returns position of the character closest to begin() within the region
+        """
+        if self.size() > 0:
+            return self.begin()
+        else:
+            return None
+
+    def last(self):
+        """
+        Returns position of the character closest to end() within the region
+        """
+        if self.size() > 0:
+            return self.end() - 1
+        else:
+            return None
 
 def row_at(view, pt):
     return view.rowcol(pt)[0]

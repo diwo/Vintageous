@@ -28,6 +28,7 @@ from Vintageous.vi.utils import IrreversibleTextCommand
 from Vintageous.vi.utils import modes
 from Vintageous.vi.utils import regions_transformer
 from Vintageous.vi.utils import mark_as_widget
+from Vintageous.vi.utils import ViRegion
 from Vintageous.vi import cmd_defs
 from Vintageous.vi.text_objects import word_reverse
 from Vintageous.vi.text_objects import word_end_reverse
@@ -44,24 +45,15 @@ class _vi_find_in_line(ViMotionCommand):
     """
     def run(self, char=None, mode=None, count=1, inclusive=True):
         def f(view, s):
-            eol = view.line(s.b).end()
-            if s.a < s.b:
-                eol = view.line(s.b - 1).end()
+            s = ViRegion(s)
 
-            match = s
+            b = s.char_pos_b() if (s.char_pos_b() is not None) else s.b
+            eol = view.line(b).end()
 
+            match = sublime.Region(b + 1)
             for i in range(count):
-                if mode != modes.VISUAL:
-                    cursor_pos = match.a + 1
-                else:
-                    if match.a < match.b:
-                        cursor_pos = match.b
-                    else:
-                        cursor_pos = match.b + 1
-
                 # Define search range as 'rest of the line to the right'.
-                search_range = sublime.Region(min(cursor_pos, eol), eol)
-
+                search_range = sublime.Region(match.end(), eol)
                 match = find_in_range(view, char,
                                             search_range.a,
                                             search_range.b,
@@ -71,37 +63,16 @@ class _vi_find_in_line(ViMotionCommand):
                 if match is None:
                     return s
 
+            target_pos = match.a
+            if not inclusive:
+                target_pos = target_pos - 1
+
             if mode == modes.NORMAL:
-                start = match.a
-                if not inclusive:
-                    start = start - 1
-
-                return sublime.Region(start)
-
+                return sublime.Region(target_pos)
+            elif mode == modes.INTERNAL_NORMAL:
+                return sublime.Region(s.a, target_pos + 1)
             else:
-                if mode == modes.INTERNAL_NORMAL:
-                    start = s.a
-                    end = match.a + 1
-
-                else:
-                    # VISUAL mode
-                    if s.a < s.b:
-                        # Forward region
-                        start = s.a
-                        end = match.a + 1
-                    elif match.a < s.a:
-                        # Reverse region, no crossover
-                        start = s.a
-                        end = match.a
-                    else:
-                        # Reverse region, crossover
-                        start = s.a - 1
-                        end = match.a + 1
-
-                if not inclusive:
-                    end = end - 1
-
-                return sublime.Region(start, end)
+                return ViRegion.create_from_inclusive_bounds(s.char_pos_a(), target_pos)
 
         if not all([char, mode]):
             print('char', char, 'mode', mode)
@@ -120,15 +91,13 @@ class _vi_reverse_find_in_line(ViMotionCommand):
     """
     def run(self, char=None, mode=None, count=1, inclusive=True):
         def f(view, s):
-            line_start = view.line(s.b).a
-            if mode in (modes.VISUAL, modes.VISUAL_LINE, modes.VISUAL_BLOCK):
-                line_start = view.line(s.b - 1).a
+            s = ViRegion(s)
 
-            match = s.b
-            if s.a < s.b:
-                match = s.b - 1
+            b = s.char_pos_b() if (s.char_pos_b() is not None) else s.b
+            line_start = view.line(b).a
 
             try:
+                match = b
                 for i in range(count):
                     # line_text does not include character at match
                     line_text = view.substr(sublime.Region(line_start, match))
@@ -137,37 +106,16 @@ class _vi_reverse_find_in_line(ViMotionCommand):
             except ValueError:
                 return s
 
+            target_pos = match
+            if not inclusive:
+                target_pos = target_pos + 1
+
             if mode == modes.NORMAL:
-                start = match
-                if not inclusive:
-                    start = start + 1
-
-                return sublime.Region(start)
-
+                return sublime.Region(target_pos)
+            elif mode == modes.INTERNAL_NORMAL:
+                return sublime.Region(b, target_pos)
             else:
-                if mode == modes.INTERNAL_NORMAL:
-                    start = s.a
-                    end = match
-
-                else:
-                    # VISUAL mode
-                    if s.b < s.a:
-                        # Reverse region
-                        start = s.a
-                        end = match
-                    elif s.a <= match:
-                        # Forward region, no crossover
-                        start = s.a
-                        end = match + 1
-                    else:
-                        # Forward region, crossover
-                        start = s.a + 1
-                        end = match
-
-                if not inclusive:
-                    end = end + 1
-
-                return sublime.Region(start, end)
+                return ViRegion.create_from_inclusive_bounds(s.char_pos_a(), target_pos)
 
         if not all([char, mode]):
             raise ValueError('bad parameters')
